@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block info %}
+<p><center>Регистрация</center>
+<hr>
+<form action="registration" method="post">
+   {{ form.as_table }}
+   {% csrf_token %}
+   <P><input type="submit" value="Зарегистрироваться">
+</form>
+
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock info %}

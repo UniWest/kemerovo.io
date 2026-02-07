@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Культурные места города Кемерово</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=5e42c763-a9c2-4370-a86f-fb86ed36e4c1&lang=ru_RU"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        header, #contact, footer {
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: #6a5acd;
+            color: white;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--secondary);
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            background-color: rgba(48, 105, 152, 0.1);
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+            background-color: rgba(48, 105, 152, 0.1);
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: var(--secondary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 80%;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .content-block {
+            margin-bottom: 30px;
+        }
+
+        .content-block:last-child {
+            margin-bottom: 0;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 0;
+                gap: 0;
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+                transform: translateY(-150%);
+                transition: transform 0.5s ease;
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                transform: translateY(0);
+            }
+
+            .nav-links li {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links a {
+                display: block;
+                padding: 15px;
+                width: 100%;
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 20px 0;
+        }
+
+        #about, #places, #map_selection, #contact {
+            scroll-margin-top: 100px;
+        }
+
+        #about {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        #places {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        #contact {
+            background-color: #d0d0d0;
+            padding: 30px;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #333;
+            color: white;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        #controls {
+            width:100%;
+            display:grid;
+
+        }
+        #controls div button{
+            width:10%;
+        }
+        #controls div div{
+            width:80%;
+            text-align:left;
+            padding-left:1%;
+        }
+        #controls div{
+            display:flex;
+            padding-top:5px;
+
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar container">
+        <a href="#about" class="logo"><span>Добро пожаловать</span></a>
+        <div class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#about" class="active">О проекте</a></li>
+            <li><a href="#places">Список мест</a></li>
+            <li><a href="#map_selection">Карта города</a></li>
+            <li><a href="#contact">Контакты</a></li>
+        </ul>
+    </nav>
+
+    <section id="about">
+        <h1>С нами вы откроете места, о которых раньше даже не слышали…</h1>
+        <p>Проект — это цифровая (и частично офлайн) платформа, которая собирает, описывает и рекомендует места в городе, где можно провести время с пользой для души: тихо, красиво, вдохновляюще и без толп туристов и громкой музыки. Это не очередной список «топ-10 достопримечательностей», а именно подборка уголков для культурного, созерцательного и интеллектуального отдыха.</p>
+    </section>
+
+    <section id="places">
+        <h2>Список мест</h2>
+        <div id="controls">
+        <div>
+    <button onclick="showAddress('55.343686, 86.078421')">
+        Парк Ангелов
+    </button>
+    <div>
+        Парк Ангелов в Кемерове — это мемориальный сквер на месте сгоревшего ТРЦ «Зимняя вишня», созданный в память о погибших в пожаре 25 марта 2018 года. Он был выбран и назван по итогам открытого интернет‑голосования и официально открыт 15 сентября 2019 года.
+    </div>
+    </div>
+    </div>
+
+    <div id="controls">
+    <div>
+    <button onclick="showAddress('55.346553, 86.081592')">
+        Кинотеатр Космос
+    </button>
+    <div>
+        Кинотеатр «Космос» — один из знаковых культурных объектов Кемеровa, хорошо знакомый нескольким поколениями горожан. Его здание стоит на одной из ключевых городских магистралей и давно стало привычным ориентиром в городской среде. Внутри работают современные кинозалы, где проходят премьеры, фестивали и специальные показы. Пространство вокруг используется как точка притяжения: сюда приходят не только на фильмы, но и просто встретиться, прогуляться, подождать друзей. Для многих жителей «Космос» ассоциируется с первыми походами в кино и важными событиями в городской культурной жизни.
+    </div>
+    </div>
+    </div>
+
+    <div id="controls">
+    <div>
+    <button onclick="showAddress('55.354789, 86.088051')">
+        Площадь советов
+    </button>
+    <div>
+        Площадь Советов — центральная площадь города и важное общественное пространство, где чувствуется «официальное» лицо Кемеровa. В её окружении находятся административные здания и значимые объекты, а сама площадь служит местом проведения городских торжеств, митингов, парадов и праздничных концертов. Здесь устанавливают главную новогоднюю ёлку, проводят массовые мероприятия ко Дню города и государственным праздникам. В обычные дни площадь — это просторное место для прогулок, встреч и фотографий, откуда удобно начинать знакомство с центром города.
+    </div>
+    </div>
+    </div>
+
+    <div id="controls">
+    <div>
+    <button onclick="showAddress('55.345775, 86.091159')">
+        Детский парк Антошка
+    </button>
+    <div>
+        Парк «Антошка» — уютное семейное пространство, ориентированное прежде всего на детей. На его территории расположены игровые площадки, аттракционы, зоны для спокойного отдыха и прогулочные аллеи. Летом здесь шумно и оживлённо: работают карусели, торговые точки с напитками и сладостями, проходят детские праздники. Зимой парк не теряет актуальности — сюда приходят покататься на горках, погулять по заснеженным дорожкам и просто сменить городской пейзаж на более «домашнюю» атмосферу. Для ближайших районов это одно из главных мест, куда родители ведут детей на прогулку.
+    </div>
+    </div>
+    </div>
+
+    <div id="controls">
+    <div>
+    <button onclick="showAddress('55.358913, 86.088374')">
+        Притомская набережная
+    </button>
+    <div>
+        Притомская набережная — одно из самых популярных мест для прогулок вдоль реки Томь. Продуманная пешеходная зона, смотровые площадки и скамейки позволяют неспешно гулять, любуясь видом на воду и город. Здесь часто катаются на велосипедах, самокатах, бегают по вечерам и устраивают фотосессии. Летом набережная становится пространством для массовых мероприятий: здесь могут проходить городские праздники, уличные концерты, спортивные акции. Зимой она превращается в спокойное место для тихих прогулок и созерцания заснеженной реки.
+    </div>
+    </div>
+    </div>
+    </div>
+
+    </section>
+
+    <section id="map_selection">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <div id="contact">
+        <p>почта</p>
+        <p>номер</p>
+        <p>имя</p>
+    </div>
+
+    <footer>
+        <p>я</p>
+    </footer>
+
+    <script>
+    let map;
+    let placemark;
+
+    ymaps.ready(init);
+
+    function init() {
+        map = new ymaps.Map("map", {
+            center: [55.354968, 86.087314], // центр Кемерово
+            zoom: 18
+        });
+    }
+
+    function showAddress(address) {
+    // address: строка вида "59.938631,30.314993"
+        const coords = address
+            .split(',')                // ["59.938631", "30.314993"][web:1][web:2]
+            .map(v => parseFloat(v));  // [59.938631, 30.314993][web:10]
+
+        map.setCenter(coords); // для Яндекс.Карт ожидается массив [lat, lon][web:9]
+    }
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-links a');
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinksContainer = document.getElementById('navLinks');
+
+            function activateMenuOnScroll() {
+                let current = '';
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', function() {
+                activateMenuOnScroll();
+            });
+
+            menuToggle.addEventListener('click', function() {
+                navLinksContainer.classList.toggle('active');
+                menuToggle.innerHTML = navLinksContainer.classList.contains('active')
+                    ? '<i class="fab fa-bars"></i>'
+                    : '<i class="fas fa-bars"></i>';
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinksContainer.classList.remove('active');
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            activateMenuOnScroll();
+        });
+    </script>
+
+    <noscript><div><img src="https://mc.yandex.ru/watch/104612140" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+</body>
+</html>
